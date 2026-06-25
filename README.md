@@ -30,6 +30,8 @@ Calculator Hub is a comprehensive web-based calculator application featuring **1
 | 💻 Programming | Number base conversions (dec, bin, oct, hex) |
 | 📅 Date Calculator | Days between dates, future/past date calculations |
 | 📈 Statistics | Mean, median, mode, standard deviation calculations |
+| 🎨 Color Code | Convert between HEX, RGB, HSL and preview colors |
+| 🛣️ Distance & Speed | Distance and speed unit conversion with travel time |
 | 🎨 Color | Convert between RGB, HEX, and HSL color codes |
 | 🚗 Distance | Calculate distances, speeds, and travel times |
 
@@ -65,14 +67,14 @@ All currency options display both **name and code**:
 - Japanese Yen (JPY)
 - And 150+ more major currencies
 
-## 📊 Stats
+## 📊 GitHub Stats
 
 <div align="center">
 
-![Stars Graph](https://starchart.cc/SyntX34/Calculator.svg)
-
-![GitHub Activity](https://img.shields.io/github/last-commit/SyntX34/Calculator?color=3b82f6&label=last%20commit)
-![GitHub commits](https://img.shields.io/github/commit-activity/m/SyntX34/Calculator?color=22c55e)
+[![GitHub Stars](https://img.shields.io/github/stars/SyntX34/Calculator?style=flat-square&color=3b82f6)](https://github.com/SyntX34/Calculator/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/SyntX34/Calculator?style=flat-square&color=f1f5f9)](https://github.com/SyntX34/Calculator/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/SyntX34/Calculator?style=flat-square&color=22c55e)](https://github.com/SyntX34/Calculator/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/SyntX34/Calculator?style=flat-square&color=ef4444)](https://github.com/SyntX34/Calculator/commits)
 
 </div>
 
