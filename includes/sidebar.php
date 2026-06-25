@@ -39,5 +39,11 @@
         <a href="#" class="mode-link" data-mode="statistics">
             <i class="fas fa-chart-bar"></i> Statistics
         </a>
+        <a href="#" class="mode-link" data-mode="color">
+            <i class="fas fa-palette"></i> Color Codes
+        </a>
+        <a href="#" class="mode-link" data-mode="distance">
+            <i class="fas fa-route"></i> Distance & Speed
+        </a>
     </nav>
 </aside>
