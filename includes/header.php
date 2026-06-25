@@ -5,7 +5,7 @@
         <div class="logo">
             <a href="index.php">
                 <img src="images/logo.svg" alt="CalcHub Logo" class="logo-img">
-                <span>CalcHub</span>
+                <span>Calculator Hub</span>
             </a>
         </div>
         
