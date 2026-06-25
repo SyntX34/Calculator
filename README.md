@@ -4,20 +4,19 @@
 
 ![CalcHub Logo](images/logo.svg)
 
-[![Visitors](https://api.visitors-badge.glitch.me/badge?page_id=calculator&leftColor=3b82f6&rightColor=f1f5f9)](https://github.com/SyntX34/Calculator)
-[![GitHub stars](https://img.shields.io/github/stars/SyntX34/Calculator?style=social)](https://github.com/SyntX34/Calculator/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/SyntX34/Calculator?style=social)](https://github.com/SyntX34/Calculator/network/members)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/SyntX34/Calculator?style=for-the-badge&logo=github&color=3b82f6)](https://github.com/SyntX34/Calculator/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/SyntX34/Calculator?style=for-the-badge&logo=github&color=f1f5f9)](https://github.com/SyntX34/Calculator/network/members)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
 </div>
 
 ## 🚀 Overview
 
-CalcHub is a comprehensive web-based calculator application featuring **10 different calculator modes** in a single, beautifully designed interface. Built with vanilla JavaScript, PHP, and modern CSS, it offers both functionality and aesthetics.
+Calculator Hub is a comprehensive web-based calculator application featuring **12 different calculator modes** in a single, beautifully designed interface. Built with vanilla JavaScript, PHP, and modern CSS, it offers both functionality and aesthetics.
 
 ## ✨ Features
 
-### 🎯 10 Calculator Modes
+### 🎯 12 Calculator Modes
 
 | Mode | Description |
 |------|-------------|
@@ -31,6 +30,8 @@ CalcHub is a comprehensive web-based calculator application featuring **10 diffe
 | 💻 Programming | Number base conversions (dec, bin, oct, hex) |
 | 📅 Date Calculator | Days between dates, future/past date calculations |
 | 📈 Statistics | Mean, median, mode, standard deviation calculations |
+| 🎨 Color | Convert between RGB, HEX, and HSL color codes |
+| 🚗 Distance | Calculate distances, speeds, and travel times |
 
 ### 🎨 Design Highlights
 
@@ -134,6 +135,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ---
 
 <div align="center">
-  <img src="https://profile-counter.glitch.me/SyntX34/count.svg" alt="Visitor Count">
+  <p><a href="https://github.com/SyntX34/Calculator"><img src="https://img.shields.io/github/v/tag/SyntX34/Calculator?label=version&color=3b82f6"></a>
+  <a href="https://github.com/SyntX34/Calculator"><img src="https://img.shields.io/github/repo-size/SyntX34/Calculator?color=f1f5f9"></a></p>
   <p>Made with ❤️ for calculations</p>
 </div>
