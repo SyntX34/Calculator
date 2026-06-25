@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![CalcHub Logo](images/logo.svg)
+![CalcHub Logo](https://store-images.s-microsoft.com/image/apps.46204.9007199266372279.d5010434-2200-4ff2-bf68-6071f1346e4c.8b052ff3-c9b4-498e-92b5-0b77d22e05a9)
 
 [![GitHub stars](https://img.shields.io/github/stars/SyntX34/Calculator?style=for-the-badge&logo=github&color=3b82f6)](https://github.com/SyntX34/Calculator/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/SyntX34/Calculator?style=for-the-badge&logo=github&color=f1f5f9)](https://github.com/SyntX34/Calculator/network/members)
