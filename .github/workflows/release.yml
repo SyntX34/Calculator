@@ -136,14 +136,14 @@ jobs:
         run: |
           VER=v${{ inputs.version }}
           mkdir -p renamed
-          find src-tauri/target/release/bundle/ -type f \(
-            -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" -o
-            -name "*.exe" -o -name "*.msi" -o -name "*.rpm"
-          \) | while IFS= read -r f; do
-            ext="${f##*.}"
-            base="calculator-hub_$VER.$ext"
-            cp "$f" "renamed/$base"
-            echo "  $base"
+          find src-tauri/target/release/bundle/ -type f \( \
+            -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" -o \
+            -name "*.exe" -o -name "*.msi" -o -name "*.rpm" \
+          \) | while IFS= read -r f; do \
+            ext="${f##*.}"; \
+            base="calculator-hub_$VER.$ext"; \
+            cp "$f" "renamed/$base"; \
+            echo "  $base"; \
           done
 
       - name: Upload desktop bundle
