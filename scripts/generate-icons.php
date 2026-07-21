@@ -135,10 +135,9 @@ if ($generated) {
         $totalSize = 8 + 8 + $pngSize; // header + entry + png
         // ICNS header: magic 'icns' + 4-byte big-endian total size
         $icns  = pack('a4N', 'icns', $totalSize);
-        // Icon entry: type 'ic07' (128x128 PNG) + 4-byte big-endian entry size + PNG data
-        // We use 'ic07' but embed 512px PNG — macOS scales it
+        // Icon entry: type 'ic09' (512x512 PNG) + 4-byte big-endian entry size + PNG data
         $entrySize = 8 + $pngSize;
-        $icns .= pack('a4N', 'ic07', $entrySize);
+        $icns .= pack('a4N', 'ic09', $entrySize);
         $icns .= $icnsPngData;
         file_put_contents("$iconsDir/icon.icns", $icns);
         echo "  icon.icns  ($pngSize bytes PNG in ICNS container)\n";
