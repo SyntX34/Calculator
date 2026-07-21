@@ -1,4 +1,55 @@
+/**
+ * Detects a real phone (Android/iOS), whether we're running:
+ *  - as a normal web page served by index.php (PHP already set
+ *    body.mobile-device, this just confirms/keeps it in sync), or
+ *  - as the packaged Capacitor app (no PHP at runtime, so this is
+ *    the ONLY place mobile gets detected), or
+ *  - as the packaged Tauri desktop app (always false here, so the
+ *    desktop build keeps the full header/footer/nav).
+ */
+function detectMobileDevice() {
+    const isCapacitorNative = !!(window.Capacitor &&
+        typeof window.Capacitor.getPlatform === 'function' &&
+        window.Capacitor.getPlatform() !== 'web');
+    const ua = navigator.userAgent || '';
+    const isMobileUA = /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|WPDesktop/i.test(ua);
+    return isCapacitorNative || isMobileUA;
+}
+
+const IS_MOBILE_DEVICE = detectMobileDevice();
+
+if (IS_MOBILE_DEVICE) {
+    document.documentElement.classList.add('mobile-device');
+    document.body && document.body.classList.add('mobile-device');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    if (IS_MOBILE_DEVICE) {
+        document.body.classList.add('mobile-device');
+        // No footer, no cookie banner on the phone build/app - full-screen only.
+        document.querySelectorAll('.footer').forEach(el => el.remove());
+        const cookieBanner = document.getElementById('cookie-banner');
+        if (cookieBanner) cookieBanner.remove();
+    }
+
+    // The static build (used to package the Capacitor/Tauri apps) has no
+    // PHP at runtime, so the full-screen "mobile-calc" layout classes have
+    // to be applied here instead of by index.php.
+    const appContainerEl = document.querySelector('.app-container');
+    const mainContentEl = document.querySelector('.main-content');
+    function applyMobileCalcLayout() {
+        if (!IS_MOBILE_DEVICE || !appContainerEl || !mainContentEl) return;
+        const onCalculatorPage = !!mainContentEl.querySelector('.calculator-container');
+        appContainerEl.classList.toggle('mobile-calc', onCalculatorPage);
+        mainContentEl.classList.toggle('mobile-calc-full', onCalculatorPage);
+    }
+    applyMobileCalcLayout();
+    // Re-applied by the static build's SPA router after every page swap.
+    window.pageChanged = function() {
+        applyMobileCalcLayout();
+        if (typeof closeSidebar === 'function') closeSidebar();
+    };
+
     const themeToggle = document.getElementById('themeToggle');
     const themes = ['light', 'dark', 'neon', 'nature', 'ocean'];
     let currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -731,18 +782,53 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    /**
+     * Asks for the device's location the way a native app does.
+     * On the packaged Android/iOS app, this goes through Capacitor's
+     * Geolocation plugin so the real system permission dialog shows up
+     * (plain navigator.geolocation is not wired to a native prompt inside
+     * a Capacitor WebView). Falls back to the browser API on the web
+     * and on the Tauri desktop app.
+     */
+    function requestDeviceLocation(onSuccess, onError) {
+        const geo = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation;
+        if (geo) {
+            geo.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 })
+                .then(pos => onSuccess(pos.coords.latitude, pos.coords.longitude))
+                .catch(() => onError && onError());
+            return;
+        }
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                onSuccess(pos.coords.latitude, pos.coords.longitude);
+            }, () => onError && onError());
+        } else {
+            onError && onError();
+        }
+    }
+
     if (weatherLocationBtn) {
         weatherLocationBtn.addEventListener('click', function() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    const { latitude, longitude } = pos.coords;
-                    getWeatherByCoords(latitude, longitude);
-                }, () => {
+            requestDeviceLocation(
+                (latitude, longitude) => getWeatherByCoords(latitude, longitude),
+                () => {
                     weatherResult.innerHTML = '<p class="weather-placeholder">Unable to get location. Please enter a city.</p>';
-                });
-            }
+                }
+            );
         });
     }
+
+    let hasAskedForLocation = false;
+    document.querySelectorAll('.mode-link[data-mode="weather"]').forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (!IS_MOBILE_DEVICE || hasAskedForLocation) return;
+            hasAskedForLocation = true;
+            requestDeviceLocation(
+                (latitude, longitude) => getWeatherByCoords(latitude, longitude),
+                () => {}
+            );
+        });
+    });
 
     /* ---- Weather codes mapped to emoji / description ---- */
     const weatherCodes = {

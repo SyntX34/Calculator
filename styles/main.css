@@ -1482,6 +1482,53 @@ select.input-field {
     opacity: 0.7;
 }
 
+.mobile-device .header-nav,
+.mobile-device #navToggle,
+.mobile-device .footer,
+.mobile-device #cookie-banner {
+    display: none !important;
+}
+
+.mobile-device .header {
+    padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+}
+
+.mobile-device .app-container {
+    padding-bottom: 0;
+}
+
+.sidebar-page-links {
+    display: none;
+}
+
+.mobile-device .sidebar-page-links {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 2px solid var(--border);
+}
+
+.sidebar-page-links a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.7rem 0.9rem;
+    border-radius: 8px;
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all var(--transition);
+}
+
+.sidebar-page-links a:hover,
+.sidebar-page-links a.active {
+    background: var(--primary);
+    color: #fff;
+}
+
 .mobile-device .mobile-calc {
     /* Remove all padding / gap for full-screen */
     padding: 0;

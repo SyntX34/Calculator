@@ -124,6 +124,16 @@ function renderIndexHtml(array $pages): string {
                 if (theme) document.documentElement.setAttribute('data-theme', theme);
             } catch(e) {}
         })();
+        
+        (function() {
+            var isCapacitorNative = !!(window.Capacitor &&
+                typeof window.Capacitor.getPlatform === 'function' &&
+                window.Capacitor.getPlatform() !== 'web');
+            var isMobileUA = /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|WPDesktop/i.test(navigator.userAgent || '');
+            if (isCapacitorNative || isMobileUA) {
+                document.documentElement.classList.add('mobile-device');
+            }
+        })();
     </script>
 </head>
 <body>
@@ -181,6 +191,11 @@ function renderIndexHtml(array $pages): string {
                 <a href="#" class="mode-link" data-mode="statistics"><i class="fas fa-chart-bar"></i> Statistics</a>
                 <a href="#" class="mode-link" data-mode="color"><i class="fas fa-palette"></i> Color Codes</a>
                 <a href="#" class="mode-link" data-mode="distance"><i class="fas fa-route"></i> Distance & Speed</a>
+            </nav>
+
+            <nav class="sidebar-page-links">
+                <a href="?page=about" class="nav-link" data-page="about"><i class="fas fa-info-circle"></i> About</a>
+                <a href="?page=contact" class="nav-link" data-page="contact"><i class="fas fa-envelope"></i> Contact</a>
             </nav>
         </aside>
 
@@ -284,6 +299,7 @@ function renderIndexHtml(array $pages): string {
          * 
         */
         (function() {
+            if (document.documentElement.classList.contains('mobile-device')) return;
             if (localStorage.getItem('calcHubCookieConsent')) return;
             var banner = document.createElement('div');
             banner.id = 'cookie-banner';

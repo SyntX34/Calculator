@@ -46,4 +46,13 @@
             <i class="fas fa-route"></i> Distance & Speed
         </a>
     </nav>
+
+    <nav class="sidebar-page-links">
+        <a href="index.php?page=about">
+            <i class="fas fa-info-circle"></i> About
+        </a>
+        <a href="index.php?page=contact">
+            <i class="fas fa-envelope"></i> Contact
+        </a>
+    </nav>
 </aside>

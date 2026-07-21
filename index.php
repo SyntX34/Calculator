@@ -25,15 +25,11 @@ $isMobile = isMobile();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body class="<?php echo $isMobile ? 'mobile-device' : ''; ?>">
-    <?php if (!$isMobile || $page !== 'calculator'): ?>
-        <?php include 'includes/header.php'; ?>
-    <?php endif; ?>
-    
+    <?php include 'includes/header.php'; ?>
+
     <div class="app-container <?php echo ($isMobile && $page === 'calculator') ? 'mobile-calc' : ''; ?>">
-        <?php if (!$isMobile || $page !== 'calculator'): ?>
-            <?php include 'includes/sidebar.php'; ?>
-        <?php endif; ?>
-        
+        <?php include 'includes/sidebar.php'; ?>
+
         <main class="main-content <?php echo ($isMobile && $page === 'calculator') ? 'mobile-calc-full' : ''; ?>">
             <?php
             switch ($page) {
@@ -52,11 +48,9 @@ $isMobile = isMobile();
             ?>
         </main>
     </div>
-    
-    <?php if (!$isMobile): ?>
-        <?php include 'includes/footer.php'; ?>
-    <?php endif; ?>
-    
+
+    <?php include 'includes/footer.php'; ?>
+
     <?php if (!$isMobile && (!isset($_COOKIE['cookie_consent']) || $_COOKIE['cookie_consent'] === 'pending')): ?>
     <div id="cookie-banner" class="cookie-banner">
         <div class="cookie-content">

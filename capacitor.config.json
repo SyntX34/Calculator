@@ -19,6 +19,7 @@
     "SplashScreen": {
       "launchShowDuration": 1000,
       "backgroundColor": "#3b82f6"
-    }
+    },
+    "Geolocation": {}
   }
 }
