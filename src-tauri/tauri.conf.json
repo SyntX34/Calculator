@@ -1,6 +1,5 @@
 {
   "build": {
-    "beforeBuildCommand": "cd .. && npm run build:static",
     "beforeDevCommand": "cd .. && php -S localhost:8000",
     "devPath": "http://localhost:8000",
     "distDir": "../dist"
