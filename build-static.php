@@ -122,7 +122,8 @@ function startPhpServer(int $port, string $docRoot): ?array {
         } else {
             exec("\"$phpBin\" -S 127.0.0.1:$port -t \"$docRoot\" >/dev/null 2>&1 &");
         }
-        return null; // will be treated as fallback server
+        // Return empty array (truthy) so caller proceeds to waitForServer()
+        return [];
     }
     foreach ($pipes as $pipe) {
         if (is_resource($pipe)) stream_set_blocking($pipe, false);
