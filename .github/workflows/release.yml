@@ -177,10 +177,10 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build APK & AAB
+      - name: Build debug APK (signed, installable) + release AAB (for Play Store)
         run: |
           cd android
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
           ./gradlew bundleRelease
 
       - name: Upload Android artifacts
@@ -188,7 +188,7 @@ jobs:
         with:
           name: mobile-android
           path: |
-            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/apk/debug/*.apk
             android/app/build/outputs/bundle/release/*.aab
 
   ios:
