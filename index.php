@@ -13,23 +13,28 @@ if (!in_array($page, $allowedPages)) {
 }
 
 $theme = detectTheme();
+$isMobile = isMobile();
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="<?php echo $theme; ?>">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Calculator Hub - All-in-One Calculator</title>
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-    <?php include 'includes/header.php'; ?>
+<body class="<?php echo $isMobile ? 'mobile-device' : ''; ?>">
+    <?php if (!$isMobile || $page !== 'calculator'): ?>
+        <?php include 'includes/header.php'; ?>
+    <?php endif; ?>
     
-    <div class="app-container">
-        <?php include 'includes/sidebar.php'; ?>
+    <div class="app-container <?php echo ($isMobile && $page === 'calculator') ? 'mobile-calc' : ''; ?>">
+        <?php if (!$isMobile || $page !== 'calculator'): ?>
+            <?php include 'includes/sidebar.php'; ?>
+        <?php endif; ?>
         
-        <main class="main-content">
+        <main class="main-content <?php echo ($isMobile && $page === 'calculator') ? 'mobile-calc-full' : ''; ?>">
             <?php
             switch ($page) {
                 case 'calculator':
@@ -48,8 +53,11 @@ $theme = detectTheme();
         </main>
     </div>
     
-    <?php include 'includes/footer.php'; ?>
-    <?php if (!isset($_COOKIE['cookie_consent']) || $_COOKIE['cookie_consent'] === 'pending'): ?>
+    <?php if (!$isMobile): ?>
+        <?php include 'includes/footer.php'; ?>
+    <?php endif; ?>
+    
+    <?php if (!$isMobile && (!isset($_COOKIE['cookie_consent']) || $_COOKIE['cookie_consent'] === 'pending')): ?>
     <div id="cookie-banner" class="cookie-banner">
         <div class="cookie-content">
             <p>🍪 This site uses cookies to enhance your experience. By continuing, you agree to our use of cookies.</p>

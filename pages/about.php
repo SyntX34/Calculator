@@ -30,5 +30,34 @@
                 <p>Real-time weather and currency data from Google</p>
             </div>
         </div>
+
+        <div class="about-developer">
+            <div class="about-card">
+                <i class="fas fa-user-code fa-3x"></i>
+                <h2>Developed by Samir Neupane</h2>
+                <p>Built with passion for precision and a clean user experience across all platforms.</p>
+                <div class="developer-links">
+                    <a href="mailto:samirneupane66@gmail.com" class="btn-primary" target="_blank">
+                        <i class="fas fa-envelope"></i> Email
+                    </a>
+                    <a href="https://github.com/SyntX34" class="btn-secondary" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://github.com/SyntX34/Calculator" class="btn-secondary" target="_blank">
+                        <i class="fas fa-code-branch"></i> Repository
+                    </a>
+                    <a href="https://steamcommunity.com/id/SyntX34" class="btn-secondary" target="_blank">
+                        <i class="fab fa-steam"></i> Steam
+                    </a>
+                    <a href="https://discord.com/users/nh_syntx" class="btn-secondary" target="_blank">
+                        <i class="fab fa-discord"></i> Discord
+                    </a>
+                    <a href="https://instagram.com/dfa.nh_syntx" class="btn-secondary" target="_blank">
+                        <i class="fab fa-instagram"></i> Instagram
+                    </a>
+                </div>
+            </div>
+            <p class="about-copyright">&copy; 2026-<?php echo date('Y'); ?> Calculator Hub. All rights reserved.</p>
+        </div>
     </div>
 </div>

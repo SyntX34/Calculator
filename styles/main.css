@@ -1455,3 +1455,264 @@ select.input-field {
     .cookie-banner { padding: 0.8rem 1rem; }
     .cookie-content p { font-size: 0.85rem; }
 }
+
+/* ============================================
+   ABOUT PAGE — Developer Section
+   (Shown on all platforms; footer info lives
+    here so mobile users see it too)
+   ============================================ */
+
+.about-developer {
+    margin-top: 1rem;
+}
+
+.developer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    justify-content: center;
+    margin-top: 1.2rem;
+}
+
+.developer-links .btn-primary,
+.developer-links .btn-secondary {
+    gap: 6px;
+    font-size: 0.88rem;
+}
+
+.about-copyright {
+    text-align: center;
+    color: var(--text2);
+    font-size: 0.85rem;
+    margin-top: 1.5rem;
+    opacity: 0.7;
+}
+
+/* ============================================
+   MOBILE — Full-Screen System Calculator
+   Applied when body has .mobile-device class
+   AND the app-container has .mobile-calc
+   ============================================ */
+
+.mobile-device.mobile-calc {
+    /* Remove all padding / gap for full-screen */
+    padding: 0;
+    gap: 0;
+    max-width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.mobile-device .mobile-calc-full {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+    padding: 0;
+}
+
+.mobile-device .mobile-calc-full .calculator-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+/* Hide header + its title on mobile calculator */
+.mobile-device .mobile-calc-full .calculator-header {
+    display: none;
+}
+
+/* Massive display area — takes up ~30% of viewport */
+.mobile-device .mobile-calc-full .calc-display {
+    flex: 1;
+    min-height: 0;
+    border-radius: 0;
+    border: none;
+    background: var(--surface);
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+}
+
+.mobile-device .mobile-calc-full .calc-display::after {
+    display: none;
+}
+
+.mobile-device .mobile-calc-full .calc-expression {
+    font-size: 1rem;
+    opacity: 0.55;
+    min-height: 24px;
+}
+
+.mobile-device .mobile-calc-full .calc-result {
+    font-size: 3rem;
+    font-weight: 300;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+}
+
+/* Button grid — system-calculator style */
+.mobile-device .mobile-calc-full .calc-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 10px 12px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface);
+}
+
+/* Big circular-ish buttons like iOS/Android calculator */
+.mobile-device .mobile-calc-full .btn-calc {
+    padding: 0;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    color: var(--text);
+    box-shadow: none;
+    transition: background 0.15s ease, transform 0.1s ease;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: manipulation;
+}
+
+.mobile-device .mobile-calc-full .btn-calc:hover {
+    transform: none;
+    background: var(--hover-bg);
+    color: var(--text);
+    box-shadow: none;
+}
+
+.mobile-device .mobile-calc-full .btn-calc:active,
+.mobile-device .mobile-calc-full .btn-press-effect {
+    transform: scale(0.88) !important;
+    opacity: 0.75;
+}
+
+.mobile-device .mobile-calc-full .btn-calc::after {
+    display: none;
+}
+
+/* Operator buttons — accent color */
+.mobile-device .mobile-calc-full .btn-calc.operator {
+    background: var(--hover-bg);
+    color: var(--primary);
+    font-size: 1.6rem;
+}
+
+.mobile-device .mobile-calc-full .btn-calc.operator:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Equals button — filled accent */
+.mobile-device .mobile-calc-full .btn-calc.equals {
+    background: var(--primary);
+    color: white;
+    font-size: 1.6rem;
+}
+
+.mobile-device .mobile-calc-full .btn-calc.equals:hover {
+    background: var(--primary-dark);
+}
+
+.mobile-device .mobile-calc-full .btn-calc.equals:active {
+    background: var(--primary);
+}
+
+/* "0" button spans 2 cols — needs manual reset on aspect-ratio */
+.mobile-device .mobile-calc-full .btn-calc[data-value="0"] {
+    border-radius: 9999px;
+    aspect-ratio: auto;
+    grid-column: span 2;
+    justify-content: flex-start;
+    padding-left: 1.5rem;
+}
+
+/* Scientific mode on mobile — smaller grid */
+.mobile-device .mobile-calc-full .sci-buttons {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.mobile-device .mobile-calc-full .sci-btn {
+    border-radius: 10px;
+    aspect-ratio: auto;
+    font-size: 0.78rem;
+    padding: 0.5rem;
+}
+
+/* All other panels (weather, currency, etc.) — normal styling, scrollable */
+.mobile-device .mobile-calc-full .mode-panel:not(.active) {
+    display: none;
+}
+
+.mobile-device .mobile-calc-full .mode-panel.active[data-mode]:not([data-mode="normal"]):not([data-mode="scientific"]) {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem;
+    height: 100%;
+}
+
+.mobile-device .mobile-calc-full .mode-panel.active[data-mode]:not([data-mode="normal"]):not([data-mode="scientific"]) .calculator-container {
+    height: auto;
+}
+
+/* On small screens under 400px, tighten the grid gap and reduce padding */
+@media (max-width: 400px) {
+    .mobile-device .mobile-calc-full .calc-buttons {
+        gap: 5px;
+        padding: 6px 8px;
+        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .mobile-device .mobile-calc-full .btn-calc {
+        font-size: 1.3rem;
+    }
+
+    .mobile-device .mobile-calc-full .btn-calc.operator,
+    .mobile-device .mobile-calc-full .btn-calc.equals {
+        font-size: 1.4rem;
+    }
+
+    .mobile-device .mobile-calc-full .calc-result {
+        font-size: 2.4rem;
+    }
+
+    .mobile-device .mobile-calc-full .calc-display {
+        padding: 0.5rem 0.8rem;
+    }
+}
+
+/* Dark / neon / nature / ocean themes keep their colors on mobile buttons */
+.mobile-device .mobile-calc-full .btn-calc.operator {
+    background: var(--hover-bg);
+}
+
+.mobile-device .mobile-calc-full .btn-calc.equals {
+    background: var(--primary);
+}
+
+.mobile-device .mobile-calc-full .btn-calc.operator:hover {
+    background: var(--primary);
+}
+
+.mobile-device .mobile-calc-full .btn-calc.equals:hover {
+    background: var(--primary-dark);
+}
