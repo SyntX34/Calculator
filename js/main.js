@@ -744,6 +744,80 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    /* ---- Weather codes mapped to emoji / description ---- */
+    const weatherCodes = {
+        0:  { emoji: '☀️', desc: 'Clear sky' },
+        1:  { emoji: '🌤️', desc: 'Mainly clear' },
+        2:  { emoji: '⛅', desc: 'Partly cloudy' },
+        3:  { emoji: '☁️', desc: 'Overcast' },
+        45: { emoji: '🌫️', desc: 'Foggy' },
+        48: { emoji: '🌫️', desc: 'Depositing rime fog' },
+        51: { emoji: '🌦️', desc: 'Light drizzle' },
+        53: { emoji: '🌦️', desc: 'Moderate drizzle' },
+        55: { emoji: '🌧️', desc: 'Dense drizzle' },
+        61: { emoji: '🌦️', desc: 'Slight rain' },
+        63: { emoji: '🌧️', desc: 'Moderate rain' },
+        65: { emoji: '🌧️', desc: 'Heavy rain' },
+        71: { emoji: '🌨️', desc: 'Slight snow' },
+        73: { emoji: '🌨️', desc: 'Moderate snow' },
+        75: { emoji: '❄️', desc: 'Heavy snow' },
+        77: { emoji: '❄️', desc: 'Snow grains' },
+        80: { emoji: '🌦️', desc: 'Slight rain showers' },
+        81: { emoji: '🌧️', desc: 'Moderate rain showers' },
+        82: { emoji: '🌧️', desc: 'Violent rain showers' },
+        85: { emoji: '🌨️', desc: 'Slight snow showers' },
+        86: { emoji: '❄️', desc: 'Heavy snow showers' },
+        95: { emoji: '⛈️', desc: 'Thunderstorm' },
+        96: { emoji: '⛈️', desc: 'Thunderstorm with slight hail' },
+        99: { emoji: '⛈️', desc: 'Thunderstorm with heavy hail' },
+    };
+
+    function getWeatherDescription(code) {
+        return weatherCodes[code] || { emoji: '🌡️', desc: 'Unknown' };
+    }
+
+    function fetchWeatherByCoords(lat, lon, cityName) {
+        weatherResult.innerHTML = '<p class="weather-placeholder">Loading...</p>';
+
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`)
+            .then(res => {
+                if (!res.ok) throw new Error('Weather service unavailable');
+                return res.json();
+            })
+            .then(data => {
+                const c = data.current;
+                const w = getWeatherDescription(c.weather_code);
+
+                weatherResult.innerHTML = `
+                    <div class="weather-result-content">
+                        <div class="result-item">
+                            <span class="label">📍 ${cityName}</span>
+                            <span class="value">${c.temperature_2m}°C</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">🌡️ Feels like</span>
+                            <span class="value">${c.apparent_temperature}°C</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">💧 Humidity</span>
+                            <span class="value">${c.relative_humidity_2m}%</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">💨 Wind</span>
+                            <span class="value">${c.wind_speed_10m} km/h</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">${w.emoji} ${w.desc}</span>
+                            <span class="value"></span>
+                        </div>
+                    </div>
+                `;
+            })
+            .catch(err => {
+                weatherResult.innerHTML = `<p class="weather-placeholder">Error: ${err.message}</p>`;
+            });
+    }
+
     function getWeather(city) {
         if (!city) {
             weatherResult.innerHTML = '<p class="weather-placeholder">Please enter a city name</p>';
@@ -752,40 +826,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
         weatherResult.innerHTML = '<p class="weather-placeholder">Loading...</p>';
 
-        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=bd5e378503939ddaee76f12ad7a97608&units=metric`)
+        /* Step 1: Geocode the city name via Open-Meteo (free, no key) */
+        fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`)
             .then(res => {
                 if (!res.ok) throw new Error('City not found');
                 return res.json();
             })
-            .then(data => {
-                const temp = data.main.temp;
-                const feels = data.main.feels_like;
-                const humidity = data.main.humidity;
-                const wind = data.wind.speed;
-                const desc = data.weather[0].description;
-                const icon = data.weather[0].icon;
+            .then(geo => {
+                if (!geo.results || geo.results.length === 0) {
+                    throw new Error('City not found');
+                }
+                const loc = geo.results[0];
+                const displayName = [loc.name, loc.admin1, loc.country].filter(Boolean).join(', ');
+                /* Step 2: Fetch weather by coordinates */
+                return fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`)
+                    .then(res => {
+                        if (!res.ok) throw new Error('Weather data unavailable');
+                        return res.json();
+                    })
+                    .then(wData => ({ wData, displayName }));
+            })
+            .then(({ wData, displayName }) => {
+                const c = wData.current;
+                const w = getWeatherDescription(c.weather_code);
 
                 weatherResult.innerHTML = `
                     <div class="weather-result-content">
                         <div class="result-item">
-                            <span class="label">📍 ${data.name}, ${data.sys.country}</span>
-                            <span class="value">${temp}°C</span>
+                            <span class="label">📍 ${displayName}</span>
+                            <span class="value">${c.temperature_2m}°C</span>
                         </div>
                         <div class="result-item">
                             <span class="label">🌡️ Feels like</span>
-                            <span class="value">${feels}°C</span>
+                            <span class="value">${c.apparent_temperature}°C</span>
                         </div>
                         <div class="result-item">
                             <span class="label">💧 Humidity</span>
-                            <span class="value">${humidity}%</span>
+                            <span class="value">${c.relative_humidity_2m}%</span>
                         </div>
                         <div class="result-item">
                             <span class="label">💨 Wind</span>
-                            <span class="value">${wind} m/s</span>
+                            <span class="value">${c.wind_speed_10m} km/h</span>
                         </div>
                         <div class="result-item">
-                            <span class="label">${desc}</span>
-                            <span class="value"><img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon" style="width:40px;"></span>
+                            <span class="label">${w.emoji} ${w.desc}</span>
+                            <span class="value"></span>
                         </div>
                     </div>
                 `;
@@ -796,14 +881,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getWeatherByCoords(lat, lon) {
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=bd5e378503939ddaee76f12ad7a97608&units=metric`)
+        /* Reverse geocode via Open-Meteo (free, no key) */
+        fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=en&format=json`)
             .then(res => res.json())
-            .then(data => {
-                weatherLocation.value = data.name;
-                getWeather(data.name);
+            .then(geo => {
+                const loc = geo.results && geo.results[0];
+                const cityName = loc ? [loc.name, loc.admin1, loc.country].filter(Boolean).join(', ') : 'Your Location';
+                weatherLocation.value = loc ? loc.name : '';
+                fetchWeatherByCoords(lat, lon, cityName);
             })
             .catch(() => {
-                weatherResult.innerHTML = '<p class="weather-placeholder">Unable to fetch weather data</p>';
+                /* Fallback: fetch weather without a display name */
+                fetchWeatherByCoords(lat, lon, 'Your Location');
             });
     }
 
