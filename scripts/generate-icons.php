@@ -109,8 +109,8 @@ if ($generated) {
             imagedestroy($dst);
             echo "  $file  ({$size}x{$size})\n";
 
-            // Capture largest PNG for .ico generation
-            if ($size === 256 || $size === 512) {
+            // Capture 256px version for .ico (max resolution the format officially supports)
+            if ($size === 256) {
                 $icoPngData = file_get_contents("$iconsDir/$file");
             }
         }
@@ -137,7 +137,7 @@ if ($generated) {
         $ico .= $icoPngData;
 
         file_put_contents($icoPath, $ico);
-        echo "  icon.ico  (generated from {$icoPngData} bytes PNG)\n";
+        echo "  icon.ico  (generated from " . strlen($icoPngData) . " bytes PNG)\n";
     }
 
     echo "\n✓ Icons generated in src-tauri/icons/\n";
