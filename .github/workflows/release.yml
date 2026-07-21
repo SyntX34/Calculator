@@ -24,8 +24,7 @@ jobs:
     outputs:
       changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -39,7 +38,6 @@ jobs:
             CHANGES=$(git log "$LAST_TAG..HEAD" --pretty=format:"- %s" --no-merges 2>/dev/null || echo "- No new commits")
             CHANGELOG="## Changes since $LAST_TAG\n\n$CHANGES\n"
           fi
-          # Use delimiter to handle multiline output safely
           echo "changelog<<DELIM" >> $GITHUB_OUTPUT
           printf "%b" "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
@@ -49,8 +47,7 @@ jobs:
     name: Generate Icons
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -58,8 +55,18 @@ jobs:
           php-version: 8.2
           extensions: gd
 
-      - name: Generate app icons
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate source PNG
         run: php scripts/generate-icons.php
+
+      - name: Install Tauri CLI & generate all icon formats
+        run: |
+          npm install @tauri-apps/cli@^1
+          npx tauri icon src-tauri/icons/icon-1024.png
 
       - name: Upload icons
         uses: actions/upload-artifact@v4
@@ -80,11 +87,9 @@ jobs:
           - os: windows-latest
             target: windows
       fail-fast: false
-    continue-on-error: false
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -138,8 +143,7 @@ jobs:
     needs: [changelog, icons]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -173,7 +177,7 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build Android APK & AAB
+      - name: Build APK & AAB
         run: |
           cd android
           ./gradlew assembleRelease
@@ -193,8 +197,7 @@ jobs:
     runs-on: macos-latest
     continue-on-error: true
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -255,8 +258,7 @@ jobs:
     needs: changelog
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -292,20 +294,12 @@ jobs:
       - name: Prepare release assets
         run: |
           mkdir -p release-assets
-
-          # Collect desktop builds
           find artifacts/desktop-* -type f \( \
             -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" -o \
             -name "*.exe" -o -name "*.msi" \
           \) -exec cp -v {} release-assets/ \;
-
-          # Collect mobile builds (APK + AAB for Android, IPA for iOS)
           find artifacts/mobile-* -type f \( -name "*.apk" -o -name "*.aab" -o -name "*.ipa" \) -exec cp -v {} release-assets/ \; 2>/dev/null || true
-
-          # Collect web build
           find artifacts/web-static -type f -name "*.zip" -exec cp -v {} release-assets/ \;
-
-          echo "=== Release Assets ==="
           ls -la release-assets/
 
       - name: Create Release
