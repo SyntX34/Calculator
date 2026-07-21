@@ -151,9 +151,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.target }}
-          path: |
-            src-tauri/target/release/bundle/
-            renamed/
+          path: renamed/
 
   android:
     name: Android
