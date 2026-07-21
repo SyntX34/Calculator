@@ -35,12 +35,16 @@ $server = startPhpServer($port, __DIR__);
 if (!$server) {
     fwrite(STDERR, "✗ Failed to start the local PHP render server.\n");
     exit(1);
-}
-if (!waitForServer('127.0.0.1', $port, 10)) {
-    stopPhpServer($server);
-    fwrite(STDERR, "✗ PHP render server never became reachable on port $port.\n");
-    exit(1);
-}
+}    if (!waitForServer($port, 10)) {
+        // Try once more with a longer timeout (some CI runners are slow)
+        echo "Waiting a bit longer for PHP server to start...\n";
+        if (!waitForServer($port, 15)) {
+            stopPhpServer($server);
+            fwrite(STDERR, "✗ PHP render server never became reachable on port $port.\n");
+            fwrite(STDERR, "  Try running the build locally or check if port $port is free.\n");
+            exit(1);
+        }
+    }
 
 // Render each page
 $pages = ['calculator', 'about', 'contact'];
@@ -97,10 +101,10 @@ echo "  - dist/js/, dist/styles/, dist/images/\n";
  * 
 */
 /**
- * Starts `php -S` as a background process using proc_open, which works
- * the same way on Linux, macOS AND Windows. The previous implementation
- * used `... & echo $!` (bash job control), which silently breaks on
- * Windows because shell_exec() there runs through cmd.exe, not bash.
+ * Starts `php -S` as a background process.
+ * Binds to 127.0.0.1 (IPv4) explicitly to avoid localhost
+ * resolving to ::1 on systems with IPv6 enabled.
+ * Uses proc_open for cross-platform support.
  */
 function startPhpServer(int $port, string $docRoot): ?array {
     $descriptors = [
@@ -108,42 +112,52 @@ function startPhpServer(int $port, string $docRoot): ?array {
         1 => ['pipe', 'w'],
         2 => ['pipe', 'w'],
     ];
-    $cmd = [PHP_BINARY, '-S', "localhost:$port", '-t', $docRoot];
-    $process = proc_open($cmd, $descriptors, $pipes, $docRoot);
+    $phpBin = defined('PHP_BINARY') ? PHP_BINARY : 'php';
+    $cmd = [$phpBin, '-S', "127.0.0.1:$port", '-t', $docRoot];
+    $process = @proc_open($cmd, $descriptors, $pipes, $docRoot);
     if (!is_resource($process)) {
-        return null;
+        // Fallback: try shell exec (works on most systems)
+        if (DIRECTORY_SEPARATOR === '\\') {
+            pclose(popen("start /B \"\" \"$phpBin\" -S 127.0.0.1:$port -t \"$docRoot\"", 'r'));
+        } else {
+            exec("\"$phpBin\" -S 127.0.0.1:$port -t \"$docRoot\" >/dev/null 2>&1 &");
+        }
+        return null; // will be treated as fallback server
     }
     foreach ($pipes as $pipe) {
-        stream_set_blocking($pipe, false);
+        if (is_resource($pipe)) stream_set_blocking($pipe, false);
     }
     return ['process' => $process, 'pipes' => $pipes];
 }
 
 /**
- * Polls the port instead of a fixed sleep(1) - slower machines/CI
- * runners sometimes need more than a second for `php -S` to bind.
+ * Polls the port — slower machines/CI runners sometimes need more
+ * than a second for `php -S` to bind. Uses 127.0.0.1 directly to
+ * avoid IPv6 vs IPv4 resolution issues.
  */
-function waitForServer(string $host, int $port, int $timeoutSeconds): bool {
+function waitForServer(int $port, int $timeoutSeconds): bool {
     $deadline = microtime(true) + $timeoutSeconds;
     while (microtime(true) < $deadline) {
-        $conn = @fsockopen($host, $port, $errno, $errstr, 0.5);
+        $conn = @fsockopen('127.0.0.1', $port, $errno, $errstr, 0.5);
         if ($conn) {
             fclose($conn);
             return true;
         }
-        usleep(150000); // 150ms
+        usleep(200000); // 200ms
     }
     return false;
 }
 
 function stopPhpServer(?array $server): void {
     if (!$server) return;
-    if (is_resource($server['process'])) {
+    if (isset($server['process']) && is_resource($server['process'])) {
         proc_terminate($server['process']);
         proc_close($server['process']);
     }
-    foreach ($server['pipes'] as $pipe) {
-        if (is_resource($pipe)) fclose($pipe);
+    if (isset($server['pipes']) && is_array($server['pipes'])) {
+        foreach ($server['pipes'] as $pipe) {
+            if (is_resource($pipe)) fclose($pipe);
+        }
     }
 }
 
