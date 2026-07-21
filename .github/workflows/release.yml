@@ -133,6 +133,7 @@ jobs:
         run: npx tauri build
 
       - name: Rename desktop artifacts with version
+        shell: bash
         run: |
           VER=v${{ inputs.version }}
           mkdir -p renamed
