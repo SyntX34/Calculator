@@ -370,10 +370,13 @@ function renderIndexHtml(array $pages): string {
 
         /*
          * 
-         * Cookie Consent 
+         * Cookie Consent — only in web browser, never in native apps 
          * 
         */
         (function() {
+            // Skip entirely in any native app (Tauri desktop, Capacitor mobile)
+            if (window.__TAURI__ ||
+                (window.Capacitor && typeof window.Capacitor.getPlatform === 'function')) return;
             if (document.documentElement.classList.contains('mobile-device')) return;
             if (localStorage.getItem('calcHubCookieConsent')) return;
             var banner = document.createElement('div');
