@@ -132,11 +132,27 @@ jobs:
       - name: Build Tauri app
         run: npx tauri build
 
+      - name: Rename desktop artifacts with version
+        run: |
+          VER=v${{ inputs.version }}
+          mkdir -p renamed
+          find src-tauri/target/release/bundle/ -type f \(
+            -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" -o
+            -name "*.exe" -o -name "*.msi" -o -name "*.rpm"
+          \) | while IFS= read -r f; do
+            ext="${f##*.}"
+            base="calculator-hub_$VER.$ext"
+            cp "$f" "renamed/$base"
+            echo "  $base"
+          done
+
       - name: Upload desktop bundle
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.target }}
-          path: src-tauri/target/release/bundle/
+          path: |
+            src-tauri/target/release/bundle/
+            renamed/
 
   android:
     name: Android
@@ -183,6 +199,14 @@ jobs:
           ./gradlew assembleDebug
           ./gradlew bundleRelease
 
+      - name: Rename Android artifacts with version
+        run: |
+          VER=v${{ inputs.version }}
+          cp android/app/build/outputs/apk/debug/app-debug.apk "calculator-hub_$VER.apk"
+          cp android/app/build/outputs/bundle/release/app-release.aab "calculator-hub_$VER.aab"
+          echo "Renamed: app-debug.apk → calculator-hub_$VER.apk"
+          echo "Renamed: app-release.aab → calculator-hub_$VER.aab"
+
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -190,6 +214,8 @@ jobs:
           path: |
             android/app/build/outputs/apk/debug/*.apk
             android/app/build/outputs/bundle/release/*.aab
+            calculator-hub_*.apk
+            calculator-hub_*.aab
 
   ios:
     name: iOS
