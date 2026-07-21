@@ -1,5 +1,6 @@
 {
   "build": {
+    "beforeBuildCommand": "cd .. && php -r \"if(!file_exists('dist/index.html')){echo 'ERROR: dist/index.html not found. Run: npm run build:static';exit(1);}\"",
     "devPath": "../dist/index.html",
     "distDir": "../dist"
   },
