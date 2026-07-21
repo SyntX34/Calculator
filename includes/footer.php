@@ -7,7 +7,7 @@
         </div>
         
         <div class="footer-author">
-            <span>Developed by <strong>Dolraj Neupane</strong></span>
+            <span>Developed by <strong>Samir Neupane</strong></span>
             <div class="social-links">
                 <a href="mailto:samirneupane66@gmail.com" title="Email">
                     <img src="images/email.svg" alt="Email" class="social-icon">
@@ -27,6 +27,10 @@
 
                 <a href="https://discord.com/users/nh_syntx" target="_blank" title="Discord">
                     <img src="images/discord.svg" alt="Discord" class="social-icon">
+                </a>
+
+                <a href="https://instagram.com/dfa.nh_syntx" target="_blank" title="Instagram">
+                    <img src="images/instagram.svg" alt="Instagram" class="social-icon">
                 </a>
             </div>
         </div>

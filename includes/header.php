@@ -25,7 +25,10 @@
             <button id="themeToggle" class="theme-toggle" title="Toggle Theme">
                 <i class="fas fa-moon"></i>
             </button>
-            <button id="sidebarToggle" class="sidebar-toggle" title="Toggle Sidebar">
+            <button id="navToggle" class="sidebar-toggle" title="Toggle Navigation" aria-label="Toggle navigation menu">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <button id="sidebarToggle" class="sidebar-toggle" title="Toggle Modes" aria-label="Toggle calculator modes sidebar">
                 <i class="fas fa-bars"></i>
             </button>
         </div>

@@ -1,0 +1,24 @@
+{
+  "appId": "com.calculatorhub.app",
+  "appName": "Calculator Hub",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": null,
+      "keystoreAlias": null
+    }
+  },
+  "ios": {
+    "scheme": "Calculator Hub"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1000,
+      "backgroundColor": "#3b82f6"
+    }
+  }
+}

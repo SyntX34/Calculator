@@ -12,7 +12,7 @@
                     <i class="fas fa-user"></i>
                     <div>
                         <strong>Developer</strong>
-                        <span>Dolraj Neupane</span>
+                        <span>Samir Neupane</span>
                     </div>
                 </div>
                 <div class="contact-item">

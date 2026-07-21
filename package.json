@@ -1,0 +1,24 @@
+{
+  "name": "calculator-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Calculator Hub - All-in-One Cross-Platform Calculator",
+  "author": "Samir Neupane",
+  "license": "MIT",
+  "scripts": {
+    "build:static": "php build-static.php",
+    "build:tauri": "npm run build:static && npx tauri build",
+    "build:capacitor": "npm run build:static && npx cap sync && npx cap copy",
+    "build:android": "npm run build:capacitor && npx cap open android",
+    "build:ios": "npm run build:capacitor && npx cap open ios",
+    "dev:web": "php -S localhost:8000",
+    "dev:tauri": "npx tauri dev"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.6.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/ios": "^6.0.0"
+  }
+}

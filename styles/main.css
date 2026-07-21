@@ -195,6 +195,11 @@ body.sidebar-overlay-active::before {
     align-items: center;
 }
 
+#navToggle,
+#sidebarToggle {
+    display: none; /* Hidden on desktop for toggle buttons, shown on mobile */
+}
+
 .theme-toggle,
 .sidebar-toggle {
     background: var(--surface2);
@@ -246,6 +251,8 @@ body.sidebar-overlay-active::before {
     height: fit-content;
     max-height: calc(100vh - 120px);
     overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     position: sticky;
     top: 80px;
     transition: transform var(--transition), opacity var(--transition);
@@ -875,6 +882,7 @@ select.input-field {
     background: var(--footer-bg);
     border-top: 1px solid var(--border);
     padding: 1.5rem 2rem;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
     margin-top: auto;
 }
 
@@ -1162,7 +1170,16 @@ select.input-field {
 }
 
 @media (max-width: 900px) {
-    .header { padding: 0 1rem; }
+    .header {
+        padding: 0 1rem;
+        padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+        padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+    }
+
+    #navToggle,
+    #sidebarToggle {
+        display: flex; /* Show toggle buttons on mobile */
+    }
 
     .header-nav {
         display: none;
@@ -1192,12 +1209,15 @@ select.input-field {
         top: 0;
         left: 0;
         height: 100%;
+        height: -webkit-fill-available;
         max-height: 100vh;
         z-index: 1500;
         border-radius: 0 var(--radius) var(--radius) 0;
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         padding: 1.5rem 1rem;
+        padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     }
 
     .sidebar.open {
@@ -1229,9 +1249,16 @@ select.input-field {
 
     .footer-author { justify-content: center; }
 
-    .history-panel { width: 100%; max-width: 100vw; }
+    .history-panel {
+        width: 100%;
+        max-width: 100vw;
+        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    }
 
     .cookie-content { flex-direction: column; text-align: center; }
+    .cookie-banner {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    }
 
     .cookie-actions { justify-content: center; }
 
@@ -1239,17 +1266,31 @@ select.input-field {
 }
 
 @media (max-width: 480px) {
-    .calc-buttons { gap: 6px; }
+    .calc-buttons { gap: 5px; }
 
     .btn-calc {
-        padding: 0.6rem 0.3rem;
-        font-size: 0.9rem;
-        border-radius: 8px;
+        padding: 0.75rem 0.3rem;
+        font-size: 1rem;
+        border-radius: 10px;
+        min-height: 44px;
     }
 
-    .calc-result { font-size: 1.8rem; }
+    .btn-calc.equals { font-size: 1.2rem; }
+
+    .calc-result {
+        font-size: 1.8rem;
+        letter-spacing: -0.5px;
+    }
+
+    .calc-display {
+        padding: 0.8rem 1rem;
+        min-height: 72px;
+    }
+
+    .calc-expression { font-size: 0.8rem; }
 
     .calculator-header h2 { font-size: 1rem; }
+    .calculator-container { padding: 0.75rem; }
 
     .weather-input,
     .unit-input,
@@ -1276,4 +1317,141 @@ select.input-field {
     .color-copy-btns { flex-direction: column; }
     .distance-tabs { flex-direction: column; }
     .dist-tab { border-radius: 8px; }
+
+    .percentage-types,
+    .prog-operations,
+    .date-operations { flex-direction: column; }
+
+    .percentage-types .btn-secondary,
+    .prog-operations .btn-secondary,
+    .date-operations .btn-secondary { width: 100%; text-align: center; justify-content: center; }
+
+    .btn-primary,
+    .btn-secondary {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .header-controls {
+        gap: 0.5rem;
+    }
+
+    .theme-toggle,
+    .sidebar-toggle,
+    #navToggle {
+        width: 40px;
+        height: 40px;
+    }
+
+    .input-field {
+        padding: 0.7rem 0.8rem;
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+
+    .btn-calc,
+    .btn-primary,
+    .btn-secondary,
+    .btn-icon,
+    .mode-link {
+        touch-action: manipulation; /* Remove 300ms tap delay on mobile */
+    }
+
+    .page-content { padding: 1rem; }
+
+    .stats-input textarea {
+        min-height: 80px;
+    }
+
+    .date-input label {
+        font-size: 0.85rem;
+    }
+
+    #colorAlphaVal { display: none; }
+    .alpha-slider { width: 60px; }
+
+    .color-input-native {
+        width: 64px;
+        height: 64px;
+    }
+    .color-preview-box { height: 64px; }
+
+    .footer { padding: 1rem; }
+    .footer-author { gap: 0.8rem; }
+    .social-links { gap: 0.5rem; }
+    .social-icon { width: 22px; height: 22px; }
+}
+
+@media (max-width: 380px) {
+    .header {
+        padding: 0 0.6rem;
+        height: 56px;
+    }
+
+    .logo a {
+        font-size: 1.1rem;
+        gap: 6px;
+    }
+
+    .logo-img { height: 28px; }
+
+    .app-container { padding: 0.5rem; gap: 0.5rem; }
+
+    .calculator-container { padding: 0.5rem; }
+    .calculator-header { margin-bottom: 0.8rem; padding-bottom: 0.6rem; }
+
+    .calc-buttons { gap: 4px; }
+    .btn-calc {
+        padding: 0.65rem 0.2rem;
+        font-size: 0.9rem;
+        min-height: 40px;
+        border-radius: 8px;
+    }
+
+    .sci-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .calc-result { font-size: 1.5rem; }
+    .calc-display {
+        padding: 0.6rem 0.8rem;
+        min-height: 64px;
+    }
+
+    .sidebar { width: 260px; }
+
+    .history-panel { padding: 1rem; }
+
+    .distance-tabs .dist-tab {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .weather-input .btn-primary,
+    .weather-input .btn-secondary {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+        width: 100%;
+    }
+
+    .contact-item {
+        padding: 0.6rem;
+        gap: 0.6rem;
+    }
+
+    .contact-item i { font-size: 1.1rem; }
+
+    .result-item { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+    .result-item .value { text-align: left; width: 100%; }
+
+    .about-card { padding: 1rem; }
+    .feature-item { padding: 1rem; }
+
+    .header-nav {
+        top: 56px;
+    }
+
+    .cookie-banner { padding: 0.8rem 1rem; }
+    .cookie-content p { font-size: 0.85rem; }
 }

@@ -87,7 +87,7 @@ git clone https://github.com/SyntX34/Calculator.git
 
 2. Run on a web server with PHP support
 
-3. No database required - runs entirely client-side with optional PHP features
+3. No database required, runs entirely client-side with optional PHP features
 
 ## 📁 Project Structure
 
@@ -132,12 +132,12 @@ Contributions welcome! Feel free to submit issues and pull requests.
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License **see [LICENSE](LICENSE) file for details**.
 
 ---
 
 <div align="center">
   <p><a href="https://github.com/SyntX34/Calculator"><img src="https://img.shields.io/github/v/tag/SyntX34/Calculator?label=version&color=3b82f6"></a>
   <a href="https://github.com/SyntX34/Calculator"><img src="https://img.shields.io/github/repo-size/SyntX34/Calculator?color=f1f5f9"></a></p>
-  <p>Made with ❤️ for calculations</p>
+  <p>Made with ❤️ for calculations by Samir Neupane a.k.a SyntX</p>
 </div>

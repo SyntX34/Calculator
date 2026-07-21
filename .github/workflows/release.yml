@@ -1,0 +1,314 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release?'
+        required: true
+        type: boolean
+        default: false
+
+env:
+  APP_NAME: Calculator-Hub
+  CARGO_TERM_COLOR: always
+
+jobs:
+  changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Changelog from commits
+        id: changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            CHANGELOG="## Initial Release v${{ inputs.version }}\n\n### Features\n- 12 calculator modes: Normal, Scientific, Weather, Currency, Age, Percentage, Unit, Programming, Date, Statistics, Color, Distance\n- Multiple themes: Light, Dark, Neon, Nature, Ocean\n- Calculation history with local storage\n- Keyboard support\n- Responsive mobile-friendly design\n- Cross-platform: Windows, macOS, Linux, Android, iOS, Web\n"
+          else
+            CHANGES=$(git log "$LAST_TAG..HEAD" --pretty=format:"- %s" --no-merges 2>/dev/null || echo "- No new commits")
+            CHANGELOG="## Changes since $LAST_TAG\n\n$CHANGES\n"
+          fi
+          # Use delimiter to handle multiline output safely
+          echo "changelog<<DELIM" >> $GITHUB_OUTPUT
+          printf "%b" "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "DELIM" >> $GITHUB_OUTPUT
+
+  icons:
+    name: Generate Icons
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: gd
+
+      - name: Generate app icons
+        run: php scripts/generate-icons.php
+
+      - name: Upload icons
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-icons
+          path: src-tauri/icons/
+
+  desktop:
+    name: Desktop (${{ matrix.os }})
+    needs: [changelog, icons]
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+          - os: macos-latest
+            target: macos
+          - os: windows-latest
+            target: windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      - name: Download icons
+        uses: actions/download-artifact@v4
+        with:
+          name: app-icons
+          path: src-tauri/icons/
+
+      - name: Install Linux Dependencies
+        if: matrix.target == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.0-dev \
+            build-essential \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build static assets
+        run: npm run build:static
+
+      - name: Build Tauri app
+        run: npx tauri build
+
+      - name: Upload desktop bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.target }}
+          path: src-tauri/target/release/bundle/
+
+  android:
+    name: Android
+    needs: [changelog, icons]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build static assets
+        run: npm run build:static
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Android APK
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-android
+          path: android/app/build/outputs/apk/release/*.apk
+
+  ios:
+    name: iOS
+    needs: [changelog, icons]
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build static assets
+        run: npm run build:static
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Generate ExportOptions.plist
+        run: |
+          cat > ios/App/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>development</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build iOS
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/CalculatorHub.xcarchive \
+            archive 2>&1 || echo "iOS build requires Apple Developer signing - skipping"
+
+      - name: Upload iOS IPA (if built)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-ios
+          path: ${{ runner.temp }}/CalculatorHub.xcarchive
+
+  web:
+    name: Web (Static)
+    needs: changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      - name: Generate static build
+        run: php build-static.php
+
+      - name: Package web build
+        run: |
+          cd dist
+          zip -r ../${{ env.APP_NAME }}-Web-v${{ inputs.version }}.zip .
+
+      - name: Upload web static build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-static
+          path: ${{ env.APP_NAME }}-Web-v${{ inputs.version }}.zip
+
+  release:
+    name: Create Release v${{ inputs.version }}
+    needs: [changelog, desktop, android, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+
+          # Collect desktop builds
+          find artifacts/desktop-* -type f \( \
+            -name "*.AppImage" -o -name "*.deb" -o -name "*.dmg" -o \
+            -name "*.exe" -o -name "*.msi" \
+          \) -exec cp -v {} release-assets/ \;
+
+          # Collect mobile builds (if any)
+          find artifacts/mobile-* -type f \( -name "*.apk" -o -name "*.aab" -o -name "*.ipa" \) -exec cp -v {} release-assets/ \; 2>/dev/null || true
+
+          # Collect web build
+          find artifacts/web-static -type f -name "*.zip" -exec cp -v {} release-assets/ \;
+
+          echo "=== Release Assets ==="
+          ls -la release-assets/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: Calculator Hub v${{ inputs.version }}
+          body: ${{ needs.changelog.outputs.changelog }}
+          prerelease: ${{ inputs.prerelease }}
+          files: release-assets/*
+          generate_release_notes: false

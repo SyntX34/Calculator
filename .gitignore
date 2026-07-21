@@ -2,3 +2,12 @@
 .vscode/*
 .build
 *.log
+dist/
+android/
+ios/
+src-tauri/target/
+node_modules/
+.DS_Store
+Thumbs.db
+nul
+NUL

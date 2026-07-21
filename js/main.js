@@ -29,7 +29,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebarClose = document.getElementById('sidebarClose');
 
+    function isMobileView() {
+        return window.innerWidth <= 900;
+    }
+
     function openSidebar() {
+        if (!isMobileView()) return;
         sidebar.classList.add('open');
         document.body.classList.add('sidebar-overlay-active');
     }
@@ -40,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     sidebarToggle.addEventListener('click', function(e) {
         e.stopPropagation();
+        if (!isMobileView()) return;
         sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
     });
 
@@ -55,24 +61,93 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Header nav toggle for mobile
+    const navToggle = document.getElementById('navToggle');
+    const headerNav = document.querySelector('.header-nav');
+
+    if (navToggle && headerNav) {
+        navToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            headerNav.classList.toggle('open');
+            // Toggle icon between ellipsis and times
+            const icon = this.querySelector('i');
+            icon.className = headerNav.classList.contains('open') ? 'fas fa-times' : 'fas fa-ellipsis-v';
+        });
+
+        // Close nav when clicking outside
+        document.addEventListener('click', function(e) {
+            if (headerNav.classList.contains('open') &&
+                !headerNav.contains(e.target) &&
+                !navToggle.contains(e.target)) {
+                headerNav.classList.remove('open');
+                const icon = navToggle.querySelector('i');
+                icon.className = 'fas fa-ellipsis-v';
+            }
+        });
+
+        // Close nav when a link is clicked
+        headerNav.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                headerNav.classList.remove('open');
+                const icon = navToggle.querySelector('i');
+                icon.className = 'fas fa-ellipsis-v';
+            });
+        });
+    } else {
+        // Fallback: if no navToggle, hide navToggle button
+        if (navToggle) navToggle.style.display = 'none';
+    }
+
     let touchStartX = 0;
     let touchStartY = 0;
+    let touchStartTime = 0;
 
     document.addEventListener('touchstart', function(e) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
     }, { passive: true });
 
+    document.addEventListener('touchmove', function(e) {
+        // Prevent pull-to-refresh when sidebar is open
+        if (sidebar && sidebar.classList.contains('open')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
     document.addEventListener('touchend', function(e) {
+        if (!isMobileView()) return;
+
         const dx = e.changedTouches[0].clientX - touchStartX;
         const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-        if (dy > 60) return;
-        if (dx > 60 && touchStartX < 40) {
+        const dt = Date.now() - touchStartTime;
+
+        // Ignore if swiped too vertically or too slow
+        if (dy > Math.abs(dx) * 0.7 || dt > 400) return;
+
+        // Swipe right from left edge to open sidebar
+        if (dx > 50 && touchStartX < 40 && sidebar && !sidebar.classList.contains('open')) {
             openSidebar();
-        } else if (dx < -60 && sidebar.classList.contains('open')) {
+        }
+        // Swipe left to close sidebar
+        else if (dx < -50 && sidebar && sidebar.classList.contains('open')) {
             closeSidebar();
         }
     }, { passive: true });
+
+    // Close sidebar on back gesture (mobile browsers)
+    window.addEventListener('popstate', function() {
+        if (sidebar && sidebar.classList.contains('open')) {
+            closeSidebar();
+        }
+    });
+
+    // Re-check on resize so sidebar resets properly
+    window.addEventListener('resize', function() {
+        if (sidebar.classList.contains('open') && !isMobileView()) {
+            closeSidebar();
+        }
+    });
 
     const modeLinks = document.querySelectorAll('.mode-link');
     const modePanels = document.querySelectorAll('.mode-panel');
@@ -128,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
             restoreModeData(mode, modeData[mode]);
         }
 
-        if (window.innerWidth <= 900) {
+        if (isMobileView()) {
             closeSidebar();
         }
     }
