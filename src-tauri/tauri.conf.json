@@ -1,7 +1,6 @@
 {
   "build": {
-    "beforeDevCommand": "cd .. && php -S localhost:8000",
-    "devPath": "http://localhost:8000",
+    "devPath": "../dist/index.html",
     "distDir": "../dist"
   },
   "package": {
