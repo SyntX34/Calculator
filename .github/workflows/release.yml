@@ -117,7 +117,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install npm dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build static assets
         run: npm run build:static
@@ -160,7 +160,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install npm dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build static assets
         run: npm run build:static
@@ -203,7 +203,7 @@ jobs:
           php-version: 8.2
 
       - name: Install npm dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build static assets
         run: npm run build:static
