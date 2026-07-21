@@ -73,12 +73,14 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             target: linux
           - os: macos-latest
             target: macos
           - os: windows-latest
             target: windows
+      fail-fast: false
+    continue-on-error: false
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
