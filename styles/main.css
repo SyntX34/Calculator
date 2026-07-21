@@ -1482,10 +1482,6 @@ select.input-field {
     opacity: 0.7;
 }
 
-.mobile-device .header {
-    display: none !important;
-}
-
 .mobile-device .footer,
 .mobile-device #cookie-banner {
     display: none !important;
@@ -1493,6 +1489,49 @@ select.input-field {
 
 .mobile-device .app-container {
     padding-bottom: 0;
+}
+
+/* On mobile calculator page, make header a slim control bar */
+.mobile-device.page-calculator .header {
+    height: 44px;
+    padding: 0 0.6rem;
+    border-bottom: 1px solid var(--border);
+    box-shadow: none;
+}
+
+.mobile-device.page-calculator .logo span {
+    display: none;
+}
+
+.mobile-device.page-calculator .logo-img {
+    height: 28px;
+}
+
+.mobile-device.page-calculator .header-nav {
+    display: none;
+}
+
+.mobile-device.page-calculator .header-controls {
+    gap: 0.4rem;
+}
+
+.mobile-device.page-calculator .theme-toggle,
+.mobile-device.page-calculator .sidebar-toggle {
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
+}
+
+.mobile-device.page-calculator #navToggle {
+    display: none;
+}
+
+.mobile-device.page-calculator #sidebarToggle {
+    display: flex;
+}
+
+.mobile-device .sidebar {
+    /* Already position fixed via @media (max-width: 900px) */
 }
 
 .sidebar-page-links {
