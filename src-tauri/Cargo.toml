@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Calculator Hub - All-in-One Calculator"
 authors = ["Samir Neupane"]
 license = "MIT"
-edition = "2026"
+edition = "2021"
 
 [build-dependencies]
 tauri-build = { version = "1", features = [] }
