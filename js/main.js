@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         weatherResult.innerHTML = '<p class="weather-placeholder">Loading...</p>';
 
-        /* Step 1: Geocode the city name via Open-Meteo (free, no key) */
+        /* Geocode the city name via Open-Meteo (free, no key) then fetch weather */
         fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`)
             .then(res => {
                 if (!res.ok) throw new Error('City not found');
@@ -838,42 +838,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 const loc = geo.results[0];
                 const displayName = [loc.name, loc.admin1, loc.country].filter(Boolean).join(', ');
-                /* Step 2: Fetch weather by coordinates */
-                return fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`)
-                    .then(res => {
-                        if (!res.ok) throw new Error('Weather data unavailable');
-                        return res.json();
-                    })
-                    .then(wData => ({ wData, displayName }));
-            })
-            .then(({ wData, displayName }) => {
-                const c = wData.current;
-                const w = getWeatherDescription(c.weather_code);
-
-                weatherResult.innerHTML = `
-                    <div class="weather-result-content">
-                        <div class="result-item">
-                            <span class="label">📍 ${displayName}</span>
-                            <span class="value">${c.temperature_2m}°C</span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">🌡️ Feels like</span>
-                            <span class="value">${c.apparent_temperature}°C</span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">💧 Humidity</span>
-                            <span class="value">${c.relative_humidity_2m}%</span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">💨 Wind</span>
-                            <span class="value">${c.wind_speed_10m} km/h</span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">${w.emoji} ${w.desc}</span>
-                            <span class="value"></span>
-                        </div>
-                    </div>
-                `;
+                fetchWeatherByCoords(loc.latitude, loc.longitude, displayName);
             })
             .catch(err => {
                 weatherResult.innerHTML = `<p class="weather-placeholder">Error: ${err.message}</p>`;
