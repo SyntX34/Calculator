@@ -173,16 +173,19 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build Android APK
+      - name: Build Android APK & AAB
         run: |
           cd android
           ./gradlew assembleRelease
+          ./gradlew bundleRelease
 
-      - name: Upload Android APK
+      - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
           name: mobile-android
-          path: android/app/build/outputs/apk/release/*.apk
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/bundle/release/*.aab
 
   ios:
     name: iOS
@@ -296,7 +299,7 @@ jobs:
             -name "*.exe" -o -name "*.msi" \
           \) -exec cp -v {} release-assets/ \;
 
-          # Collect mobile builds (if any)
+          # Collect mobile builds (APK + AAB for Android, IPA for iOS)
           find artifacts/mobile-* -type f \( -name "*.apk" -o -name "*.aab" -o -name "*.ipa" \) -exec cp -v {} release-assets/ \; 2>/dev/null || true
 
           # Collect web build

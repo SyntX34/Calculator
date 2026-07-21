@@ -98,7 +98,8 @@ if ($generated) {
     imagesavealpha($src, true);
     imagealphablending($src, true);
 
-    $icoPngData = ''; // Largest PNG data for the .ico file
+    $icoPngData = '';
+    $icnsPngData = '';
 
     foreach ($sizes as $file => $size) {
         $dst = imagescale($src, $size, $size);
@@ -109,35 +110,38 @@ if ($generated) {
             imagedestroy($dst);
             echo "  $file  ({$size}x{$size})\n";
 
-            // Capture 256px version for .ico (max resolution the format officially supports)
+            // Capture 256px for .ico, 512px for .icns
             if ($size === 256) {
                 $icoPngData = file_get_contents("$iconsDir/$file");
+            }
+            if ($size === 512) {
+                $icnsPngData = file_get_contents("$iconsDir/$file");
             }
         }
     }
     imagedestroy($src);
 
-    // ICO file wrapping the PNG data (Windows 10+ supports PNG in ICO)
     if (!empty($icoPngData)) {
-        $icoPath = "$iconsDir/icon.ico";
         $pngSize = strlen($icoPngData);
-        $offset  = 6 + 16; // header + 1 directory entry
-
-        $ico  = pack('vvv', 0, 1, 1);              // ICONDIR: reserved, type=ico, count=1
-        $ico .= pack('CCCCvvV',                     // ICONDIRENTRY
-            0,      // width (0 = 256)
-            0,      // height (0 = 256)
-            0,      // colors
-            0,      // reserved
-            1,      // color planes
-            32,     // bits per pixel
-            $pngSize,
-            $offset
-        );
+        $ico  = pack('vvv', 0, 1, 1);                     // header
+        $ico .= pack('CCCCvvV', 0, 0, 0, 0, 1, 32, $pngSize, 22); // entry
         $ico .= $icoPngData;
+        file_put_contents("$iconsDir/icon.ico", $ico);
+        echo "  icon.ico  ($pngSize bytes)\n";
+    }
 
-        file_put_contents($icoPath, $ico);
-        echo "  icon.ico  (generated from " . strlen($icoPngData) . " bytes PNG)\n";
+    if (!empty($icnsPngData)) {
+        $pngSize = strlen($icnsPngData);
+        $totalSize = 8 + 8 + $pngSize; // header + entry + png
+        // ICNS header: magic 'icns' + 4-byte big-endian total size
+        $icns  = pack('a4N', 'icns', $totalSize);
+        // Icon entry: type 'ic07' (128x128 PNG) + 4-byte big-endian entry size + PNG data
+        // We use 'ic07' but embed 512px PNG — macOS scales it
+        $entrySize = 8 + $pngSize;
+        $icns .= pack('a4N', 'ic07', $entrySize);
+        $icns .= $icnsPngData;
+        file_put_contents("$iconsDir/icon.icns", $icns);
+        echo "  icon.icns  ($pngSize bytes PNG in ICNS container)\n";
     }
 
     echo "\n✓ Icons generated in src-tauri/icons/\n";
