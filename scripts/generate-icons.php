@@ -122,12 +122,80 @@ if ($generated) {
     imagedestroy($src);
 
     if (!empty($icoPngData)) {
-        $pngSize = strlen($icoPngData);
-        $ico  = pack('vvv', 0, 1, 1);                     // header
-        $ico .= pack('CCCCvvV', 0, 0, 0, 0, 1, 32, $pngSize, 22); // entry
-        $ico .= $icoPngData;
-        file_put_contents("$iconsDir/icon.ico", $ico);
-        echo "  icon.ico  ($pngSize bytes)\n";
+        // Generate a proper BMP-based ICO that Windows RC can process
+        $icoImg = @imagecreatefrompng($iconsDir . '/128x128.png');
+        if (!$icoImg) {
+            echo "  icon.ico  SKIPPED - could not read 128x128.png\n";
+        } else {
+            $icoW = imagesx($icoImg);
+            $icoH = imagesy($icoImg);
+            imagesavealpha($icoImg, true);
+
+            // Extract BGRA pixel data (bottom-up for BMP)
+            $xorData = '';
+            $andMaskBits = [];
+            for ($y = $icoH - 1; $y >= 0; $y--) {
+                for ($x = 0; $x < $icoW; $x++) {
+                    $rgb = imagecolorat($icoImg, $x, $y);
+                    $b = ($rgb >> 16) & 0xFF;
+                    $g = ($rgb >> 8) & 0xFF;
+                    $r = $rgb & 0xFF;
+                    $a = ($rgb >> 24) & 0xFF;
+                    // XOR mask: BGRA, alpha 0=opaque 255=transparent
+                    $xorData .= pack('CCCC', $b, $g, $r, 255 - $a);
+                    // AND mask: 0=opaque 1=transparent
+                    $andMaskBits[] = ($a >= 128) ? 1 : 0;
+                }
+                // Pad XOR row to 4 bytes
+                $padLen = (4 - ($icoW * 4) % 4) % 4;
+                $xorData .= str_repeat("\x00", $padLen);
+            }
+
+            // Build AND mask (1-bit per pixel, bottom-up, padded to 4 bytes)
+            $andRowBytes = (int)ceil($icoW / 8);
+            $andRowPadded = (int)ceil($andRowBytes / 4) * 4;
+            $andData = '';
+            for ($y = 0; $y < $icoH; $y++) {
+                $row = '';
+                for ($x = 0; $x < $icoW; $x++) {
+                    $bitIdx = $y * $icoW + $x;
+                    $byteIdx = intdiv($x, 8);
+                    $bitPos = 7 - ($x % 8);
+                    if (!isset($row[$byteIdx])) $row[$byteIdx] = 0;
+                    if ($andMaskBits[$bitIdx]) {
+                        $row[$byteIdx] = chr(ord($row[$byteIdx]) | (1 << $bitPos));
+                    }
+                }
+                $row = str_pad($row, $andRowPadded, "\x00");
+                $andData .= $row;
+            }
+
+            $xorSize = strlen($xorData);
+            $andSize = strlen($andData);
+            $bmpHeaderSize = 40;
+            $icoDataSize = $bmpHeaderSize + $xorSize + $andSize;
+
+            // BITMAPINFOHEADER
+            $bmp = pack('V3v2V6',
+                $bmpHeaderSize,    // biSize
+                $icoW,             // biWidth
+                $icoH * 2,         // biHeight (double for ICO XOR+AND)
+                1,                 // biPlanes
+                32,                // biBitCount
+                0,                 // biCompression (BI_RGB)
+                $xorSize,          // biSizeImage
+                0, 0, 0, 0         // biXPelsPerMeter, biYPelsPerMeter, biClrUsed, biClrImportant
+            );
+
+            $offset = 6 + 16; // ICONDIR + 1 ICONDIRENTRY
+            $ico  = pack('vvv', 0, 1, 1);
+            $ico .= pack('CCCCvvV', $icoW, $icoH, 0, 0, 1, 32, $icoDataSize, $offset);
+            $ico .= $bmp . $xorData . $andData;
+
+            file_put_contents("$iconsDir/icon.ico", $ico);
+            imagedestroy($icoImg);
+            echo "  icon.ico  (BMP-based, {$icoW}x{$icoH}, $icoDataSize bytes)\n";
+        }
     }
 
     if (!empty($icnsPngData)) {
