@@ -85,20 +85,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function openSidebar() {
-        if (!isMobileView()) return;
+        if (!isMobileView() || !sidebar) return;
         sidebar.classList.add('open');
         document.body.classList.add('sidebar-overlay-active');
     }
     function closeSidebar() {
+        if (!sidebar) return;
         sidebar.classList.remove('open');
         document.body.classList.remove('sidebar-overlay-active');
     }
 
-    sidebarToggle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (!isMobileView()) return;
-        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
-    });
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!isMobileView() || !sidebar) return;
+            sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+        });
+    }
 
     if (sidebarClose) {
         sidebarClose.addEventListener('click', function() {
@@ -107,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.addEventListener('click', function(e) {
+        if (!sidebar || !sidebarToggle) return;
         if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
             closeSidebar();
         }
@@ -195,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Re-check on resize so sidebar resets properly
     window.addEventListener('resize', function() {
-        if (sidebar.classList.contains('open') && !isMobileView()) {
+        if (sidebar && sidebar.classList.contains('open') && !isMobileView()) {
             closeSidebar();
         }
     });

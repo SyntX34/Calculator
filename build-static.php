@@ -31,37 +31,60 @@ copyDir($imagesDir, "$distDir/images");
 
 // Start a temporary PHP server to render pages
 $port = 8899;
-$pid = startPhpServer($port, __DIR__);
-if (!$pid) {
-    die("Failed to start PHP server\n");
+$server = startPhpServer($port, __DIR__);
+if (!$server) {
+    fwrite(STDERR, "✗ Failed to start the local PHP render server.\n");
+    exit(1);
 }
-sleep(1); // Wait for server to start
+if (!waitForServer('127.0.0.1', $port, 10)) {
+    stopPhpServer($server);
+    fwrite(STDERR, "✗ PHP render server never became reachable on port $port.\n");
+    exit(1);
+}
 
 // Render each page
 $pages = ['calculator', 'about', 'contact'];
 $renderedPages = [];
+$hadFailure = false;
 
 foreach ($pages as $page) {
-    $url = "http://localhost:$port/index.php?page=$page";
+    $url = "http://127.0.0.1:$port/index.php?page=$page";
     $html = @file_get_contents($url);
-    if ($html === false) {
-        echo "Warning: Failed to render page '$page'\n";
+    if ($html === false || trim($html) === '') {
+        echo "✗ Failed to render page '$page'\n";
+        $hadFailure = true;
         continue;
     }
     // Save individual page
     file_put_contents("$distDir/pages/$page.html", $html);
     // Extract just the main content for the SPA
-    preg_match('/<main class="main-content">(.*?)<\/main>/s', $html, $match);
-    $renderedPages[$page] = $match[1] ?? $html;
+    preg_match('/<main class="main-content[^"]*">(.*?)<\/main>/s', $html, $match);
+    if (!isset($match[1])) {
+        echo "✗ Could not extract <main> content for page '$page' - template may have changed.\n";
+        $hadFailure = true;
+        continue;
+    }
+    $renderedPages[$page] = $match[1];
     echo "Rendered: $page\n";
 }
 
 // Kill PHP server
-stopPhpServer($pid);
+stopPhpServer($server);
+
+if ($hadFailure || count($renderedPages) !== count($pages)) {
+    fwrite(STDERR, "\n✗ Build aborted: one or more pages failed to render. Not writing dist/index.html,\n");
+    fwrite(STDERR, "  so a broken/empty build never gets bundled into the Tauri or Capacitor app.\n");
+    exit(1);
+}
 
 // Generate the main index.html (SPA with JS routing)
 $indexHtml = renderIndexHtml($renderedPages);
 file_put_contents("$distDir/index.html", $indexHtml);
+
+if (!file_exists("$distDir/index.html") || filesize("$distDir/index.html") === 0) {
+    fwrite(STDERR, "✗ dist/index.html was not written correctly.\n");
+    exit(1);
+}
 
 echo "\n✓ Build complete! Output in dist/\n";
 echo "  - dist/index.html (SPA entry)\n";
@@ -73,17 +96,54 @@ echo "  - dist/js/, dist/styles/, dist/images/\n";
  * Helper Functions
  * 
 */
-function startPhpServer(int $port, string $docRoot): ?int {
-    $cmd = PHP_BINARY . " -S localhost:$port -t " . escapeshellarg($docRoot) . " > /dev/null 2>&1 & echo $!";
-    $output = shell_exec($cmd);
-    return $output ? (int) trim($output) : null;
+/**
+ * Starts `php -S` as a background process using proc_open, which works
+ * the same way on Linux, macOS AND Windows. The previous implementation
+ * used `... & echo $!` (bash job control), which silently breaks on
+ * Windows because shell_exec() there runs through cmd.exe, not bash.
+ */
+function startPhpServer(int $port, string $docRoot): ?array {
+    $descriptors = [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+    $cmd = [PHP_BINARY, '-S', "localhost:$port", '-t', $docRoot];
+    $process = proc_open($cmd, $descriptors, $pipes, $docRoot);
+    if (!is_resource($process)) {
+        return null;
+    }
+    foreach ($pipes as $pipe) {
+        stream_set_blocking($pipe, false);
+    }
+    return ['process' => $process, 'pipes' => $pipes];
 }
 
-function stopPhpServer(int $pid): void {
-    if (PHP_OS_FAMILY === 'Windows') {
-        exec("taskkill /F /PID $pid 2>nul");
-    } else {
-        exec("kill $pid 2>/dev/null");
+/**
+ * Polls the port instead of a fixed sleep(1) - slower machines/CI
+ * runners sometimes need more than a second for `php -S` to bind.
+ */
+function waitForServer(string $host, int $port, int $timeoutSeconds): bool {
+    $deadline = microtime(true) + $timeoutSeconds;
+    while (microtime(true) < $deadline) {
+        $conn = @fsockopen($host, $port, $errno, $errstr, 0.5);
+        if ($conn) {
+            fclose($conn);
+            return true;
+        }
+        usleep(150000); // 150ms
+    }
+    return false;
+}
+
+function stopPhpServer(?array $server): void {
+    if (!$server) return;
+    if (is_resource($server['process'])) {
+        proc_terminate($server['process']);
+        proc_close($server['process']);
+    }
+    foreach ($server['pipes'] as $pipe) {
+        if (is_resource($pipe)) fclose($pipe);
     }
 }
 

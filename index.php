@@ -28,9 +28,7 @@ $isMobile = isMobile();
     <?php include 'includes/header.php'; ?>
 
     <div class="app-container <?php echo ($isMobile && $page === 'calculator') ? 'mobile-calc' : ''; ?>">
-        <?php if (!$isMobile || $page !== 'calculator'): ?>
-            <?php include 'includes/sidebar.php'; ?>
-        <?php endif; ?>
+        <?php include 'includes/sidebar.php'; ?>
 
         <main class="main-content <?php echo ($isMobile && $page === 'calculator') ? 'mobile-calc-full' : ''; ?>">
             <?php
@@ -51,9 +49,7 @@ $isMobile = isMobile();
         </main>
     </div>
 
-    <?php if (!$isMobile): ?>
-        <?php include 'includes/footer.php'; ?>
-    <?php endif; ?>
+    <?php include 'includes/footer.php'; ?>
 
     <?php if (!$isMobile && (!isset($_COOKIE['cookie_consent']) || $_COOKIE['cookie_consent'] === 'pending')): ?>
     <div id="cookie-banner" class="cookie-banner">
