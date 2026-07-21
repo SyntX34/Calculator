@@ -247,6 +247,24 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync ios
 
+      - name: Check Apple Developer setup
+        id: check_apple
+        run: |
+          if [ -n "${{ secrets.APPLE_TEAM_ID }}" ]; then
+            echo "configured=true" >> $GITHUB_OUTPUT
+            echo "Team ID found — will sign and build .ipa"
+          else
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "No Apple Team ID set in secrets. Set APPLE_TEAM_ID to enable iOS builds."
+          fi
+
+      - name: Set Team ID in Xcode project (if configured)
+        if: steps.check_apple.outputs.configured == 'true'
+        run: |
+          # Inject Development Team into the pbxproj so xcodebuild picks it up
+          sed -i '' "s/DevelopmentTeam = \"\";/DevelopmentTeam = \"${{ secrets.APPLE_TEAM_ID }}\";/g" ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' "s/DEVELOPMENT_TEAM = \"\";/DEVELOPMENT_TEAM = \"${{ secrets.APPLE_TEAM_ID }}\";/g" ios/App/App.xcodeproj/project.pbxproj
+
       - name: Generate ExportOptions.plist
         run: |
           cat > ios/App/ExportOptions.plist << EOF
@@ -258,25 +276,48 @@ jobs:
             <string>development</string>
             <key>signingStyle</key>
             <string>automatic</string>
+            <key>teamID</key>
+            <string>${{ secrets.APPLE_TEAM_ID }}</string>
           </dict>
           </plist>
           EOF
 
-      - name: Build iOS
+      - name: Archive iOS app
+        if: steps.check_apple.outputs.configured == 'true'
         run: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
+            -allowProvisioningUpdates \
             -archivePath $RUNNER_TEMP/CalculatorHub.xcarchive \
-            archive 2>&1 || echo "iOS build requires Apple Developer signing - skipping"
+            archive
+
+      - name: Export .ipa from archive
+        if: steps.check_apple.outputs.configured == 'true'
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/CalculatorHub.xcarchive \
+            -exportPath $RUNNER_TEMP/CalculatorHub.ipa \
+            -exportOptionsPlist ios/App/ExportOptions.plist \
+            -allowProvisioningUpdates
+          mv $RUNNER_TEMP/CalculatorHub.ipa/CalculatorHub.ipa \
+             $RUNNER_TEMP/calculator-hub_v${{ inputs.version }}.ipa 2>/dev/null || \
+          mv $RUNNER_TEMP/CalculatorHub.ipa/App.ipa \
+             $RUNNER_TEMP/calculator-hub_v${{ inputs.version }}.ipa 2>/dev/null || true
+
+      - name: Skip iOS (Apple Developer not configured)
+        if: steps.check_apple.outputs.configured != 'true'
+        run: |
+          echo "⚠️ iOS build skipped — set APPLE_TEAM_ID secret in GitHub repo settings"
+          echo "   to enable iOS compilation. Requires Apple Developer Program ($99/yr)."
 
       - name: Upload iOS IPA (if built)
-        if: success()
+        if: steps.check_apple.outputs.configured == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: mobile-ios
-          path: ${{ runner.temp }}/CalculatorHub.xcarchive
+          path: ${{ runner.temp }}/calculator-hub_v${{ inputs.version }}.ipa
 
   web:
     name: Web (Static)
