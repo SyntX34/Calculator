@@ -19,7 +19,7 @@
             <div class="calc-buttons">
                 <button class="btn-calc" data-action="clear">AC</button>
                 <button class="btn-calc" data-action="sign">±</button>
-                <button class="btn-calc" data-action="percent">%</button>
+                <button class="btn-calc" data-action="backspace">⌫</button>
                 <button class="btn-calc operator" data-action="divide">÷</button>
                 
                 <button class="btn-calc" data-value="7">7</button>
@@ -59,8 +59,8 @@
                 <button class="btn-calc sci-btn" data-action="cube">x³</button>
                 <button class="btn-calc sci-btn" data-action="power">xʸ</button>
                 <button class="btn-calc sci-btn" data-action="factorial">x!</button>
-                <button class="btn-calc sci-btn" data-action="pi">π</button>
-                <button class="btn-calc sci-btn" data-action="e">e</button>
+                <button class="btn-calc" data-action="clear">AC</button>
+                <button class="btn-calc" data-action="backspace">⌫</button>
                 
                 <button class="btn-calc" data-value="7">7</button>
                 <button class="btn-calc" data-value="8">8</button>

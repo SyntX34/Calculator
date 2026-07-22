@@ -48,6 +48,9 @@
     </nav>
 
     <nav class="sidebar-page-links">
+        <a href="index.php?page=calculator" class="sidebar-calc-link">
+            <i class="fas fa-calculator"></i> Calculator
+        </a>
         <a href="index.php?page=about">
             <i class="fas fa-info-circle"></i> About
         </a>
@@ -55,4 +58,16 @@
             <i class="fas fa-envelope"></i> Contact
         </a>
     </nav>
+    
+    <div class="sidebar-icon-picker">
+        <div class="sidebar-icon-picker-header">
+            <i class="fas fa-paint-brush"></i> App Icon
+        </div>
+        <div class="icon-options">
+            <img src="images/logo.svg" class="icon-option active" data-icon="logo.svg" alt="Default" title="Default">
+            <img src="images/logo1.jpg" class="icon-option" data-icon="logo1.jpg" alt="Icon 1" title="Icon 1">
+            <img src="images/logo2.jpg" class="icon-option" data-icon="logo2.jpg" alt="Icon 2" title="Icon 2">
+            <img src="images/logo3.jpg" class="icon-option" data-icon="logo3.jpg" alt="Icon 3" title="Icon 3">
+        </div>
+    </div>
 </aside>

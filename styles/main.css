@@ -1547,6 +1547,72 @@ select.input-field {
     border-top: 2px solid var(--border);
 }
 
+.sidebar-calc-link {
+    background: var(--primary) !important;
+    color: #fff !important;
+    font-weight: 600;
+}
+
+.sidebar-calc-link:hover {
+    background: var(--primary-dark) !important;
+}
+
+.sidebar-icon-picker {
+    display: block;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 2px solid var(--border);
+}
+
+.sidebar-page-links a,
+.sidebar-icon-picker .icon-option {
+    cursor: pointer;
+}
+
+/* Show icon picker on desktop sidebar too */
+.sidebar-icon-picker .icon-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sidebar-icon-picker-header {
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.icon-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.icon-option {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    transition: all var(--transition);
+    object-fit: cover;
+}
+
+.icon-option:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.icon-option.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+    transform: scale(1.1);
+}
+
 .sidebar-page-links a {
     display: flex;
     align-items: center;

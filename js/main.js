@@ -1793,4 +1793,98 @@ document.addEventListener('DOMContentLoaded', function() {
             historyPanel.classList.remove('open');
         }
     });
+
+    function applyIcon(iconFile) {
+        // Update header logo
+        const headerLogo = document.getElementById('headerLogo');
+        if (headerLogo) headerLogo.src = 'images/' + iconFile;
+        // Update favicon
+        const favicon = document.getElementById('favicon');
+        if (favicon) favicon.href = 'images/' + iconFile;
+        // Update apple touch icon
+        const appleIcon = document.getElementById('appleTouchIcon');
+        if (appleIcon) appleIcon.href = 'images/' + iconFile;
+        // Update icon picker active state
+        document.querySelectorAll('.icon-option').forEach(function(opt) {
+            opt.classList.toggle('active', opt.dataset.icon === iconFile);
+        });
+        // Save preference
+        localStorage.setItem('appIcon', iconFile);
+    }
+
+    // Restore saved icon choice
+    const savedIcon = localStorage.getItem('appIcon');
+    if (savedIcon) applyIcon(savedIcon);
+
+    // Icon picker click handlers
+    document.querySelectorAll('.icon-option').forEach(function(opt) {
+        opt.addEventListener('click', function() {
+            applyIcon(this.dataset.icon);
+        });
+    });
+
+    // Override getWeather with AbortController timeout for better reliability
+    var origGetWeather = getWeather;
+    getWeather = function(city) {
+        if (!city) {
+            weatherResult.innerHTML = '<p class="weather-placeholder">Please enter a city name</p>';
+            return;
+        }
+        weatherResult.innerHTML = '<p class="weather-placeholder">Loading...</p>';
+
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, 10000);
+
+        fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1&language=en&format=json', { signal: controller.signal })
+            .then(function(res) {
+                if (!res.ok) throw new Error('City not found');
+                return res.json();
+            })
+            .then(function(geo) {
+                clearTimeout(timeoutId);
+                if (!geo.results || geo.results.length === 0) {
+                    throw new Error('City not found. Try a different name.');
+                }
+                var loc = geo.results[0];
+                var displayName = [loc.name, loc.admin1, loc.country].filter(Boolean).join(', ');
+                fetchWeatherByCoords(loc.latitude, loc.longitude, displayName);
+            })
+            .catch(function(err) {
+                clearTimeout(timeoutId);
+                if (err.name === 'AbortError') {
+                    weatherResult.innerHTML = '<p class="weather-placeholder">Request timed out. Check your connection or try a different city.</p>';
+                } else {
+                    weatherResult.innerHTML = '<p class="weather-placeholder">Error: ' + err.message + '</p>';
+                }
+            });
+    };
+
+    // Also add AbortController to reverse geocode in getWeatherByCoords
+    getWeatherByCoords = function(lat, lon) {
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, 10000);
+
+        fetch('https://geocoding-api.open-meteo.com/v1/reverse?latitude=' + lat + '&longitude=' + lon + '&count=1&language=en&format=json', { signal: controller.signal })
+            .then(function(res) { clearTimeout(timeoutId); return res.json(); })
+            .then(function(geo) {
+                var loc = geo.results && geo.results[0];
+                var cityName = loc ? [loc.name, loc.admin1, loc.country].filter(Boolean).join(', ') : 'Your Location';
+                weatherLocation.value = loc ? loc.name : '';
+                fetchWeatherByCoords(lat, lon, cityName);
+            })
+            .catch(function(err) {
+                clearTimeout(timeoutId);
+                if (err.name !== 'AbortError') {
+                    fetchWeatherByCoords(lat, lon, 'Your Location');
+                } else {
+                    weatherResult.innerHTML = '<p class="weather-placeholder">Request timed out. Try typing your city name instead.</p>';
+                }
+            });
+    };
+
+    var isOnCalculatorPage = document.querySelector('.calculator-container') !== null;
+    if (navToggle && !isOnCalculatorPage) {
+        // On about/contact, ensure nav toggle works
+        navToggle.style.display = 'flex';
+    }
 });

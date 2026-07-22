@@ -4,7 +4,7 @@
     <div class="header-container">
         <div class="logo">
             <a href="index.php">
-                <img src="images/logo.svg" alt="CalcHub Logo" class="logo-img">
+                <img id="headerLogo" src="images/logo.svg" alt="CalcHub Logo" class="logo-img">
                 <span>Calculator Hub</span>
             </a>
         </div>
